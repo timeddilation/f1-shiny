@@ -26,3 +26,24 @@ convert_ms_to_time <- Vectorize(function(ms){
   }
   return(displayTime)
 })
+
+available_circuit_seasons <- function(circuit_name){
+  races[circuitId == circuits[name == circuit_name, circuitId]
+        ][raceId %in% lap_times_tidy[, raceId]
+          ][order(year)
+            ][, year]
+}
+
+race_drivers <- function(circuit_name, season, race_id = NA){
+  if (is.na(race_id)) {
+    race_id <- lap_times_tidy[name == circuit_name
+                              ][year == season
+                                ][, raceId] |>
+      min()
+  }
+  
+  return(
+    lap_times_tidy[raceId == race_id, Driver] |>
+      unique()
+  )
+}

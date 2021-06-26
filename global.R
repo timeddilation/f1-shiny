@@ -1,5 +1,6 @@
 library(shiny)
 library(shinydashboard)
+library(shinyWidgets)
 library(data.table)
 library(stringr)
 library(ggplot2)
@@ -51,4 +52,3 @@ lap_times_tidy <- (function(){
 })()
 
 circuits_with_times <- unique(lap_times_tidy[order(name)][, name])
-default_circuit <- circuits_with_times[2]

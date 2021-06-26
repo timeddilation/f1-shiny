@@ -1,29 +1,13 @@
 server <- function(input, output, session){
-  ### For app initialization
-  updateSelectInput(
-    inputId = "lap_time_circuit",
-    choices = circuits_with_times,
-    selected = default_circuit
-  )
-  
-  updateSliderInput(
-    inputId = "lap_time_season",
-    min = min(lap_times_tidy[name == default_circuit, year]),
-    max = max(lap_times_tidy[name == default_circuit, year]),
-  )
-  
-  updateSelectInput(
-    inputId = "lap_time_race_driver",
-    choices = unique(lap_times_tidy[name == default_circuit & year == min(lap_times_tidy[name == default_circuit, year]), Driver]),
-    selected = unique(lap_times_tidy[name == default_circuit & year == min(lap_times_tidy[name == default_circuit, year]), Driver])[1]
-  )
   ### Update Input Options based on circuit/season selections
   observeEvent(input$lap_time_circuit, {
-    updateSliderInput(
+    circuit_seasons <- available_circuit_seasons(input$lap_time_circuit)
+    
+    updateSliderTextInput(
+      session = session,
       inputId = "lap_time_season",
-      min = min(lap_times_tidy[name == input$lap_time_circuit, year]),
-      max = max(lap_times_tidy[name == input$lap_time_circuit, year]),
-      value = min(lap_times_tidy[name == input$lap_time_circuit, year])
+      choices = circuit_seasons,
+      selected = circuit_seasons[1]
     )
   })
   
@@ -66,7 +50,15 @@ server <- function(input, output, session){
   })
   
   lap_time_circuit_race <- reactive({
-    lap_time_circuit_races()[year == input$lap_time_season]
+    # needs to handle when switching to a circuit, before season input updates
+    # to not select a season that does not exist
+    all_circuit_races <- lap_time_circuit_races()
+    
+    if(nrow(all_circuit_races[year == input$lap_time_season]) >= 1){
+      return(all_circuit_races[year == input$lap_time_season])
+    } else {
+      return(all_circuit_races[year == unique(all_circuit_races[, year][1])])
+    }
   })
   
   lap_time_circuit_lims <- reactive({
@@ -109,6 +101,9 @@ server <- function(input, output, session){
   })
   
   output$lap_time_circuit_race_density <- renderPlot({
+    # throws warning when drivers have 2 or less laps
+    # "Warning: Groups with fewer than two data points have been dropped."
+    # this message cannot be suppressed
     ggplot(
       lap_time_circuit_race(), 
       aes(
@@ -142,14 +137,15 @@ server <- function(input, output, session){
   output$lap_time_circtuit_race_driver_times_violen <- renderPlot({
     selected_race <- lap_time_circuit_race()
     selected_race_id <- unique(selected_race[, raceId])
+    # TODO: Throwing a warning when switching circuit input
     race_driver_order <- merge(
       results[raceId == selected_race_id, .(driverId, positionOrder)],
       drivers[, .(driverId, Driver)],
       by = "driverId"
     )[order(positionOrder)][, Driver]
-    
+    # END section of problematic code
     race_driver_order <- factor(race_driver_order, levels = race_driver_order)
-    
+
     ggplot(
       selected_race[, .(Driver, milliseconds)],
       aes(
@@ -158,7 +154,7 @@ server <- function(input, output, session){
         fill = Driver
       )
     ) +
-      geom_violin() +
+      geom_violin(na.rm = T) +
       scale_fill_viridis(
         limits = rev(levels(race_driver_order)), # gradiants colors based on pos
         discrete = TRUE,
@@ -186,7 +182,6 @@ server <- function(input, output, session){
   }, bg = "transparent")
   
   output$lap_time_circuit_race_drivers_best <- renderTable({
-    # TODO: Throwing a warning when switching circuit input
     top_times <- lap_time_circuit_race()[, .(milliseconds = min(milliseconds)), 
                                          by = "Driver"]
     top_times[, time := convert_ms_to_time(milliseconds)]

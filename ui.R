@@ -11,6 +11,8 @@ sidebar <- dashboardSidebar(
   )
 )
 
+default_selected_circuit <- circuits_with_times[2]
+
 body <- dashboardBody(
   tabItems(
     tabItem(
@@ -25,17 +27,16 @@ body <- dashboardBody(
           selectInput(
             "lap_time_circuit",
             "Circuit:",
-            choices = default_circuit,
-            selected = default_circuit,
+            choices = circuits_with_times,
+            selected = default_selected_circuit,
             multiple = F
           ),
-          sliderInput(
+          sliderTextInput(
             "lap_time_season",
             "Season:",
-            min = 1995,
-            max = 2021,
-            value = 2011,
-            sep = ""
+            choices = available_circuit_seasons(default_selected_circuit),
+            selected = available_circuit_seasons(default_selected_circuit)[1],
+            animate = T
           )
         ),
         box(
@@ -68,8 +69,8 @@ body <- dashboardBody(
               selectInput(
                 "lap_time_race_driver",
                 "Driver:",
-                choices = "None",
-                selected = "None",
+                choices = race_drivers(default_selected_circuit, available_circuit_seasons(default_selected_circuit)[1]),
+                selected = race_drivers(default_selected_circuit, available_circuit_seasons(default_selected_circuit)[1])[1],
                 multiple = F
               )
             ),
