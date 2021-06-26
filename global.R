@@ -1,5 +1,6 @@
 library(shiny)
 library(shinydashboard)
+library(DT)
 library(data.table)
 library(ggplot2)
 library(viridis)
@@ -19,6 +20,7 @@ circuits <- (function(){
 
 lap_times_tidy <- (function(){
   lap_times <- fread("data/lap_times.csv")
+  drivers <- fread("data/drivers.csv")
   
   race_circuit <- merge(
     circuits[, .(circuitId, circuitRef, name)],
@@ -30,6 +32,12 @@ lap_times_tidy <- (function(){
     lap_times,
     race_circuit,
     by = "raceId"
+  )
+  
+  tidy_times <- merge(
+    tidy_times,
+    drivers[, .(driverId, surname)],
+    by = "driverId"
   )
   
   return(tidy_times)

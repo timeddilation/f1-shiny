@@ -40,8 +40,25 @@ body <- dashboardBody(
         ),
         box(
           width = 12,
-          status = "info",
+          status = "warning",
           plotOutput("circuit_seasons_violen", height = "550px")
+        )
+      ),
+      column(
+        width = 9,
+        box(
+          width = 12,
+          title = "Race Lap Time Decomposition",
+          status = "danger",
+          column(
+            width = 10,
+            plotOutput("circuit_race_lap_time_density", height = "200px")
+          ),
+          column(
+            width = 2,
+            h3("Fastest Lap"),
+            tableOutput("circuit_race_driver_best_times")
+          )
         )
       )
     )

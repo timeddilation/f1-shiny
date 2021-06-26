@@ -40,29 +40,30 @@ server <- function(input, output, session){
     return(eval_circuit)
   })
   
+  eval_race <- reactive({
+    eval_circuit()[year == input$lap_time_season]
+  })
+  
   output$circuit_seasons_violen <- renderPlot({
-    circuit_races <- eval_circuit()
-    
-    gg <- 
-      ggplot(
-        circuit_races,
-        aes(
-          x = milliseconds,
-          y = year,
-          fill = year
-        )
-      ) +
+    ggplot(
+      eval_circuit(),
+      aes(
+        x = milliseconds,
+        y = year,
+        fill = year
+      )
+    ) +
       geom_violin() +
       scale_fill_viridis(
         discrete = TRUE,
         alpha = 0.6,
         option = "H"
       ) +
-      labs(
-        title = "Lap Time Distribution"
-      ) +
       scale_x_continuous(
         labels = convert_ms_to_time
+      ) +
+      labs(
+        title = "Lap Time Distribution"
       ) +
       theme_clean() +
       theme(
@@ -70,7 +71,40 @@ server <- function(input, output, session){
         legend.position = "none",
         axis.title = element_blank()
       )
-
-    return(gg)
+  })
+  
+  output$circuit_race_lap_time_density <- renderPlot({
+    ggplot(
+      eval_race(), 
+      aes(
+        x = milliseconds
+      )
+    ) +
+      geom_density(
+        aes(color = "red2", fill = "red2", alpha = 0.5)
+      ) +
+      scale_x_continuous(
+        labels = convert_ms_to_time
+      ) +
+      labs(
+        title = "Lap Times Density",
+        subtitle = "All Drivers"
+      ) +
+      ylab("Density") +
+      theme_clean() +
+      theme(
+        plot.background = element_blank(),
+        legend.position = "none",
+        axis.title.x = element_blank(),
+        axis.text.y = element_blank()
+      )
+  })
+  
+  output$circuit_race_driver_best_times <- renderTable({
+    # TODO: Throwing a warning when switching circuit input
+    top_times <- eval_race()[, .(milliseconds = min(milliseconds)), by = "surname"]
+    
+    top_times[, time := convert_ms_to_time(milliseconds)]
+    return(top_times[order(milliseconds)][, .(Driver = surname, Time = time)])
   })
 }
