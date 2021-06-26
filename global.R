@@ -1,6 +1,7 @@
 library(shiny)
 library(shinydashboard)
 library(data.table)
+library(stringr)
 library(ggplot2)
 library(viridis)
 library(ggthemes)
@@ -8,8 +9,14 @@ library(ggthemes)
 source("helper_functions.R")
 
 races <- fread("data/races.csv")
-drivers <- fread("data/drivers.csv")
 results <- fread("data/results.csv")
+
+drivers <- (function(){
+  drivers <- fread("data/drivers.csv")
+  drivers[, Driver := driverRef
+          ][, Driver := gsub("_", " ", Driver)
+            ][, Driver := str_to_title(Driver)]
+})()
 
 circuits <- (function(){
   circuits <- fread("data/circuits.csv")
@@ -36,7 +43,7 @@ lap_times_tidy <- (function(){
   
   tidy_times <- merge(
     tidy_times,
-    drivers[, .(driverId, surname)],
+    drivers[, .(driverId, Driver)],
     by = "driverId"
   )
   

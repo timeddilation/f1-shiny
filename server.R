@@ -106,19 +106,17 @@ server <- function(input, output, session){
   output$lap_time_circtuit_race_driver_times_violen <- renderPlot({
     selected_race <- lap_time_circuit_race()
     selected_race_id <- unique(selected_race[, raceId])
-    # TODO: bug here when there are 2 drivers with same name, cannot factor
-    # spa 2005, for example
     race_driver_order <- merge(
       results[raceId == selected_race_id, .(driverId, positionOrder)],
-      drivers[, .(driverId, surname)],
+      drivers[, .(driverId, Driver)],
       by = "driverId"
-    )[order(positionOrder)][, surname]
+    )[order(positionOrder)][, Driver]
     
     race_driver_order <- factor(race_driver_order, levels = race_driver_order)
     
     
     ggplot(
-      selected_race[, .(Driver = surname, milliseconds)],
+      selected_race[, .(Driver, milliseconds)],
       aes(
         x = milliseconds,
         y = Driver,
@@ -153,8 +151,8 @@ server <- function(input, output, session){
   output$lap_time_circuit_race_drivers_best <- renderTable({
     # TODO: Throwing a warning when switching circuit input
     top_times <- lap_time_circuit_race()[, .(milliseconds = min(milliseconds)), 
-                                         by = "surname"]
+                                         by = "Driver"]
     top_times[, time := convert_ms_to_time(milliseconds)]
-    return(top_times[order(milliseconds)][, .(Driver = surname, Time = time)])
+    return(top_times[order(milliseconds)][, .(Driver, Time = time)])
   })
 }
