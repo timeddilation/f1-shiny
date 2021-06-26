@@ -51,13 +51,14 @@ body <- dashboardBody(
           title = "Race Lap Time Decomposition",
           status = "danger",
           column(
-            width = 10,
-            plotOutput("lap_time_circuit_race_density", height = "200px")
-          ),
-          column(
             width = 2,
             h3("Fastest Lap"),
             tableOutput("lap_time_circuit_race_drivers_best")
+          ),
+          column(
+            width = 10,
+            plotOutput("lap_time_circuit_race_density", height = "200px"),
+            plotOutput("lap_time_circtuit_race_driver_times_violen", height = "550")
           )
         )
       )

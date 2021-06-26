@@ -86,6 +86,9 @@ server <- function(input, output, session){
       scale_x_continuous(
         labels = convert_ms_to_time
       ) +
+      scale_y_continuous(
+        position = "right"
+      ) +
       labs(
         title = "Lap Times Density",
         subtitle = "All Drivers"
@@ -97,6 +100,53 @@ server <- function(input, output, session){
         legend.position = "none",
         axis.title.x = element_blank(),
         axis.text.y = element_blank()
+      )
+  })
+  
+  output$lap_time_circtuit_race_driver_times_violen <- renderPlot({
+    selected_race <- lap_time_circuit_race()
+    selected_race_id <- unique(selected_race[, raceId])
+    # TODO: bug here when there are 2 drivers with same name, cannot factor
+    # spa 2005, for example
+    race_driver_order <- merge(
+      results[raceId == selected_race_id, .(driverId, positionOrder)],
+      drivers[, .(driverId, surname)],
+      by = "driverId"
+    )[order(positionOrder)][, surname]
+    
+    race_driver_order <- factor(race_driver_order, levels = race_driver_order)
+    
+    
+    ggplot(
+      selected_race[, .(Driver = surname, milliseconds)],
+      aes(
+        x = milliseconds,
+        y = Driver,
+        fill = Driver
+      )
+    ) +
+      geom_violin() +
+      scale_fill_viridis(
+        limits = rev(levels(race_driver_order)), # gradiants colors based on pos
+        discrete = TRUE,
+        alpha = 0.6,
+        option = "H"
+      ) +
+      scale_x_continuous(
+        labels = convert_ms_to_time
+      ) +
+      scale_y_discrete(
+        limits = rev(levels(race_driver_order)), # orders drivers from 1st-last
+        position = "right"
+      ) +
+      labs(
+        title = "Drivers' Lap Times Density"
+      ) +
+      theme_clean() +
+      theme(
+        plot.background = element_blank(),
+        legend.position = "none",
+        axis.title = element_blank()
       )
   })
   

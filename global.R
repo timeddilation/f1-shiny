@@ -9,6 +9,7 @@ source("helper_functions.R")
 
 races <- fread("data/races.csv")
 drivers <- fread("data/drivers.csv")
+results <- fread("data/results.csv")
 
 circuits <- (function(){
   circuits <- fread("data/circuits.csv")
