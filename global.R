@@ -3,6 +3,7 @@ library(shinydashboard)
 library(data.table)
 library(stringr)
 library(ggplot2)
+library(plotly)
 library(viridis)
 library(ggthemes)
 
@@ -13,9 +14,8 @@ results <- fread("data/results.csv")
 
 drivers <- (function(){
   drivers <- fread("data/drivers.csv")
-  drivers[, Driver := driverRef
-          ][, Driver := gsub("_", " ", Driver)
-            ][, Driver := str_to_title(Driver)]
+  drivers[, Driver := gsub("_", " ", driverRef)
+          ][, Driver := str_to_title(Driver)]
 })()
 
 circuits <- (function(){

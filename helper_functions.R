@@ -9,7 +9,7 @@ remove_outlier_times <- function(race_times){
 
 convert_ms_to_time <- Vectorize(function(ms){
   # a function for labels in ggplot
-  # example when plotting milliseconds on x axis: 
+  # when plotting milliseconds on x axis, convert to MM:SS.SSS format:
   # scale_x_continuous(labels = convert_ms_to_time)
   displayTime <- ""
   

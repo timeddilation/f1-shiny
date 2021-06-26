@@ -63,7 +63,19 @@ body <- dashboardBody(
             )
           ),
           tabPanel(
-            "Driver Lap Times"
+            "Driver Lap Times",
+            fluidRow(
+              selectInput(
+                "lap_time_race_driver",
+                "Driver:",
+                choices = "None",
+                selected = "None",
+                multiple = F
+              )
+            ),
+            fluidRow(
+              plotlyOutput("lap_time_race_driver_times", height = "715px")
+            )
           )
         )
       )

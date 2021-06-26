@@ -11,7 +11,13 @@ server <- function(input, output, session){
     min = min(lap_times_tidy[name == default_circuit, year]),
     max = max(lap_times_tidy[name == default_circuit, year]),
   )
-  ### Update Seasons slide based on available options for selected circuit
+  
+  updateSelectInput(
+    inputId = "lap_time_race_driver",
+    choices = unique(lap_times_tidy[name == default_circuit & year == min(lap_times_tidy[name == default_circuit, year]), Driver]),
+    selected = unique(lap_times_tidy[name == default_circuit & year == min(lap_times_tidy[name == default_circuit, year]), Driver])[1]
+  )
+  ### Update Input Options based on circuit/season selections
   observeEvent(input$lap_time_circuit, {
     updateSliderInput(
       inputId = "lap_time_season",
@@ -21,10 +27,28 @@ server <- function(input, output, session){
     )
   })
   
-  lap_time_circuit_races <- reactive({
-    selected_circuit <- circuits[name == input$lap_time_circuit, circuitRef]
+  observeEvent(input$lap_time_season, {
+    drivers_in_race <- unique(
+      lap_times_tidy[name == input$lap_time_circuit
+                     ][year == input$lap_time_season
+                       ][, Driver]
+    )
     
+    updateSelectInput(
+      inputId = "lap_time_race_driver",
+      choices = drivers_in_race,
+      selected = drivers_in_race[1]
+    )
+  })
+  ### reactive data based on user inputs
+  lap_time_circuit_races_uncut <- reactive({
+    selected_circuit <- circuits[name == input$lap_time_circuit, circuitRef]
     sample_circuit_races <- lap_times_tidy[circuitRef == selected_circuit]
+    return(sample_circuit_races)
+  })
+  
+  lap_time_circuit_races <- reactive({
+    sample_circuit_races <- lap_time_circuit_races_uncut()
     
     circuit_races <- suppressWarnings(split(
       sample_circuit_races,
@@ -44,7 +68,7 @@ server <- function(input, output, session){
   lap_time_circuit_race <- reactive({
     lap_time_circuit_races()[year == input$lap_time_season]
   })
-  
+  ### graph outputs
   output$lap_time_circuit_seasons_violen <- renderPlot({
     ggplot(
       lap_time_circuit_races(),
@@ -156,5 +180,46 @@ server <- function(input, output, session){
                                          by = "Driver"]
     top_times[, time := convert_ms_to_time(milliseconds)]
     return(top_times[order(milliseconds)][, .(Driver, Time = time)])
+  })
+  
+  output$lap_time_race_driver_times <- renderPlotly({
+    selected_race <- lap_time_circuit_races_uncut()
+    selected_race <- selected_race[year == input$lap_time_season]
+    min_time <- min(selected_race[, milliseconds]) - 5000
+    max_time <- max(selected_race[, milliseconds]) + 1000
+    
+    total_laps <- factor(1:max(selected_race[, lap]))
+    driver_laps <- selected_race[Driver == input$lap_time_race_driver]
+    driver_laps[, lap := factor(lap, levels = total_laps)]
+    
+    gg <- 
+      ggplot(
+        driver_laps,
+        aes(
+          x = lap,
+          y = milliseconds,
+          time = time
+        )
+      ) +
+      geom_bar(
+        stat = "identity",
+        fill = "#ff1801",
+        color = "black"
+      ) +
+      scale_y_continuous(
+        labels = convert_ms_to_time
+      ) +
+      scale_x_discrete(
+        limits = rev(levels(driver_laps[, lap]))
+      ) +
+      ylab("Time") +
+      xlab("Lap") +
+      theme_clean() +
+      theme(
+        plot.background = element_blank()
+      ) +
+      coord_flip(ylim = c(min_time, max_time))
+    
+    return(ggplotly(gg))
   })
 }
