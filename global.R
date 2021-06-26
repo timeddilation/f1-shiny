@@ -1,6 +1,5 @@
 library(shiny)
 library(shinydashboard)
-library(DT)
 library(data.table)
 library(ggplot2)
 library(viridis)
@@ -9,6 +8,7 @@ library(ggthemes)
 source("helper_functions.R")
 
 races <- fread("data/races.csv")
+drivers <- fread("data/drivers.csv")
 
 circuits <- (function(){
   circuits <- fread("data/circuits.csv")
@@ -20,7 +20,6 @@ circuits <- (function(){
 
 lap_times_tidy <- (function(){
   lap_times <- fread("data/lap_times.csv")
-  drivers <- fread("data/drivers.csv")
   
   race_circuit <- merge(
     circuits[, .(circuitId, circuitRef, name)],

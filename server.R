@@ -20,7 +20,7 @@ server <- function(input, output, session){
     )
   })
   
-  eval_circuit <- reactive({
+  lap_time_circuit_races <- reactive({
     selected_circuit <- circuits[name == input$lap_time_circuit, circuitRef]
     
     sample_circuit_races <- lap_times_tidy[circuitRef == selected_circuit]
@@ -40,13 +40,13 @@ server <- function(input, output, session){
     return(eval_circuit)
   })
   
-  eval_race <- reactive({
-    eval_circuit()[year == input$lap_time_season]
+  lap_time_circuit_race <- reactive({
+    lap_time_circuit_races()[year == input$lap_time_season]
   })
   
-  output$circuit_seasons_violen <- renderPlot({
+  output$lap_time_circuit_seasons_violen <- renderPlot({
     ggplot(
-      eval_circuit(),
+      lap_time_circuit_races(),
       aes(
         x = milliseconds,
         y = year,
@@ -73,9 +73,9 @@ server <- function(input, output, session){
       )
   })
   
-  output$circuit_race_lap_time_density <- renderPlot({
+  output$lap_time_circuit_race_density <- renderPlot({
     ggplot(
-      eval_race(), 
+      lap_time_circuit_race(), 
       aes(
         x = milliseconds
       )
@@ -100,10 +100,10 @@ server <- function(input, output, session){
       )
   })
   
-  output$circuit_race_driver_best_times <- renderTable({
+  output$lap_time_circuit_race_drivers_best <- renderTable({
     # TODO: Throwing a warning when switching circuit input
-    top_times <- eval_race()[, .(milliseconds = min(milliseconds)), by = "surname"]
-    
+    top_times <- lap_time_circuit_race()[, .(milliseconds = min(milliseconds)), 
+                                         by = "surname"]
     top_times[, time := convert_ms_to_time(milliseconds)]
     return(top_times[order(milliseconds)][, .(Driver = surname, Time = time)])
   })
