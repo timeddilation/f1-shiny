@@ -68,6 +68,16 @@ server <- function(input, output, session){
   lap_time_circuit_race <- reactive({
     lap_time_circuit_races()[year == input$lap_time_season]
   })
+  
+  lap_time_circuit_lims <- reactive({
+    buffer_time <- 3000
+    all_laps <- lap_time_circuit_races()
+    
+    min_time <- min(all_laps[, milliseconds], na.rm = T) - buffer_time
+    max_time <- max(all_laps[, milliseconds], na.rm = T) + buffer_time
+    
+    return(c(min_time, max_time))
+  })
   ### graph outputs
   output$lap_time_circuit_seasons_violen <- renderPlot({
     ggplot(
@@ -109,7 +119,8 @@ server <- function(input, output, session){
         aes(color = "red2", fill = "red2", alpha = 0.5)
       ) +
       scale_x_continuous(
-        labels = convert_ms_to_time
+        labels = convert_ms_to_time,
+        limits = lap_time_circuit_lims()
       ) +
       scale_y_continuous(
         position = "right"
@@ -139,7 +150,6 @@ server <- function(input, output, session){
     
     race_driver_order <- factor(race_driver_order, levels = race_driver_order)
     
-    
     ggplot(
       selected_race[, .(Driver, milliseconds)],
       aes(
@@ -156,7 +166,8 @@ server <- function(input, output, session){
         option = "H"
       ) +
       scale_x_continuous(
-        labels = convert_ms_to_time
+        labels = convert_ms_to_time,
+        limits = lap_time_circuit_lims()
       ) +
       scale_y_discrete(
         limits = rev(levels(race_driver_order)), # orders drivers from 1st-last
