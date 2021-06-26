@@ -46,19 +46,24 @@ body <- dashboardBody(
       ),
       column(
         width = 9,
-        box(
-          width = 12,
-          title = "Race Lap Time Decomposition",
-          status = "danger",
-          column(
-            width = 2,
-            h3("Fastest Lap"),
-            tableOutput("lap_time_circuit_race_drivers_best")
+        tabsetPanel(
+          type = "tabs",
+          tabPanel(
+            "Race Lap Times",
+            column(
+              width = 2,
+              h3("Fastest Lap"),
+              tableOutput("lap_time_circuit_race_drivers_best")
+            ),
+            column(
+              width = 10,
+              plotOutput("lap_time_circuit_race_density", height = "200px"),
+              hr(),
+              plotOutput("lap_time_circtuit_race_driver_times_violen", height = "550")
+            )
           ),
-          column(
-            width = 10,
-            plotOutput("lap_time_circuit_race_density", height = "200px"),
-            plotOutput("lap_time_circtuit_race_driver_times_violen", height = "550")
+          tabPanel(
+            "Driver Lap Times"
           )
         )
       )

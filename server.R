@@ -1,4 +1,5 @@
 server <- function(input, output, session){
+  ### For app initialization
   updateSelectInput(
     inputId = "lap_time_circuit",
     choices = circuits_with_times,
@@ -10,7 +11,7 @@ server <- function(input, output, session){
     min = min(lap_times_tidy[name == default_circuit, year]),
     max = max(lap_times_tidy[name == default_circuit, year]),
   )
-  
+  ### Update Seasons slide based on available options for selected circuit
   observeEvent(input$lap_time_circuit, {
     updateSliderInput(
       inputId = "lap_time_season",
@@ -101,7 +102,7 @@ server <- function(input, output, session){
         axis.title.x = element_blank(),
         axis.text.y = element_blank()
       )
-  })
+  }, bg = "transparent")
   
   output$lap_time_circtuit_race_driver_times_violen <- renderPlot({
     selected_race <- lap_time_circuit_race()
@@ -138,7 +139,8 @@ server <- function(input, output, session){
         position = "right"
       ) +
       labs(
-        title = "Drivers' Lap Times Density"
+        title = "Drivers' Lap Times Density",
+        subtitle = "Ordered By Driver Finishing Position"
       ) +
       theme_clean() +
       theme(
@@ -146,7 +148,7 @@ server <- function(input, output, session){
         legend.position = "none",
         axis.title = element_blank()
       )
-  })
+  }, bg = "transparent")
   
   output$lap_time_circuit_race_drivers_best <- renderTable({
     # TODO: Throwing a warning when switching circuit input
