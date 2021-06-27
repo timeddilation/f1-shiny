@@ -1,1 +1,5 @@
 http://ergast.com/mrd/
+
+1. Download the zip of csv files to this directory: http://ergast.com/downloads/f1db_csv.zip
+2. Unpack the zip file in this directory
+3. Start the shiny app
