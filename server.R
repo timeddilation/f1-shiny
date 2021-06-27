@@ -8,6 +8,17 @@ server <- function(input, output, session){
       selected = drivers_in_race[1]
     )
   }
+  
+  lap_time_race_name <- function(circuit_name, season){
+    race_id <- raceId_by_circuit_season(circuit_name, season)
+    
+    page_title <- paste(
+      "Track Lap Time Distributions:",
+      races[raceId == race_id, year],
+      races[raceId == race_id, name]
+    )
+    return(page_title)
+  }
   ### Update Input Options based on circuit/season selections
   observeEvent(input$lap_time_circuit, {
     circuit_seasons <- available_circuit_seasons(input$lap_time_circuit)
@@ -20,10 +31,16 @@ server <- function(input, output, session){
     )
     
     update_lap_time_race_driver(input$lap_time_circuit, circuit_seasons[1])
+    output$lap_time_race_name <- renderText({
+      lap_time_race_name(input$lap_time_circuit, circuit_seasons[1])
+    })
   }, priority = 1)
   
   observeEvent(input$lap_time_season, {
     update_lap_time_race_driver(input$lap_time_circuit, input$lap_time_season)
+    output$lap_time_race_name <- renderText({
+      lap_time_race_name(input$lap_time_circuit, input$lap_time_season)
+    })
   }, priority = 1)
   ### reactive data based on user inputs
   lap_time_circuit_races_uncut <- reactive({
@@ -304,12 +321,12 @@ server <- function(input, output, session){
     )
   })
   
-  output$lap_time_drive_debug <- renderValueBox({
-    valueBox(
-      lap_time_driver_results()[, raceId],
-      lap_time_driver_results()[, driverId],
-      color = "purple"
-    )
-  })
+  # output$lap_time_drive_debug <- renderValueBox({
+  #   valueBox(
+  #     lap_time_driver_results()[, raceId],
+  #     lap_time_driver_results()[, driverId],
+  #     color = "purple"
+  #   )
+  # })
   
 }

@@ -17,7 +17,7 @@ body <- dashboardBody(
   tabItems(
     tabItem(
       "lap_times",
-      h2("Track Lap Time Distributions"),
+      h2(textOutput("lap_time_race_name")),
       column(
         width = 3,
         box(
@@ -31,6 +31,7 @@ body <- dashboardBody(
             selected = default_selected_circuit,
             multiple = F
           ),
+          # TODO: change to race, not season. Some tracks have >1 race per season
           sliderTextInput(
             "lap_time_season",
             "Season:",
@@ -77,10 +78,10 @@ body <- dashboardBody(
                   multiple = F
                 )
               ),
-              valueBoxOutput(
-                "lap_time_drive_debug",
-                width = 3
-              ),
+              # valueBoxOutput(
+              #   "lap_time_drive_debug",
+              #   width = 3
+              # ),
               valueBoxOutput(
                 "lap_time_driver_start_pos",
                 width = 3
