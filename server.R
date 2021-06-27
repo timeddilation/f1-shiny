@@ -34,6 +34,15 @@ server <- function(input, output, session){
     output$lap_time_race_name <- renderText({
       lap_time_race_name(input$lap_time_circuit, circuit_seasons[1])
     })
+    
+    ### refactor to use races
+    circuit_races <- available_circuit_races(input$lap_time_circuit)
+    updateSliderTextInput(
+      session = session,
+      inputId = "lap_time_race",
+      choices = circuit_races,
+      selected = circuit_races[1]
+    )
   }, priority = 1)
   
   observeEvent(input$lap_time_season, {

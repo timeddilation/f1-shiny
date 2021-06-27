@@ -34,6 +34,13 @@ available_circuit_seasons <- function(circuit_name){
             ][, year]
 }
 
+available_circuit_races <- function(circuit){
+  races[circuit_name == circuit
+        ][raceId %in% lap_times_tidy[, raceId]
+          ][order(date)
+            ][, season_race_index]
+}
+
 raceId_by_circuit_season <- function(circuit_name, season){
   circuit_id <- circuits[name == circuit_name, circuitId]
   return(races[circuitId == circuit_id & year == season, raceId][1])

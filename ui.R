@@ -41,6 +41,13 @@ body <- dashboardBody(
             choices = available_circuit_seasons(default_selected_circuit),
             selected = available_circuit_seasons(default_selected_circuit)[1],
             animate = T
+          ),
+          sliderTextInput(
+            "lap_time_race",
+            "Race:",
+            choices = available_circuit_races(default_selected_circuit),
+            selected = available_circuit_races(default_selected_circuit)[1],
+            animate = T
           )
         ),
         box(
