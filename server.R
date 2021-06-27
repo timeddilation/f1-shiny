@@ -9,7 +9,7 @@ server <- function(input, output, session){
       choices = circuit_seasons,
       selected = circuit_seasons[1]
     )
-  })
+  }, priority = 1)
   
   observeEvent(input$lap_time_season, {
     drivers_in_race <- unique(
@@ -23,7 +23,7 @@ server <- function(input, output, session){
       choices = drivers_in_race,
       selected = drivers_in_race[1]
     )
-  })
+  }, priority = 1)
   ### reactive data based on user inputs
   lap_time_circuit_races_uncut <- reactive({
     selected_circuit <- circuits[name == input$lap_time_circuit, circuitRef]
@@ -187,15 +187,30 @@ server <- function(input, output, session){
     top_times[, time := convert_ms_to_time(milliseconds)]
     return(top_times[order(milliseconds)][, .(Driver, Time = time)])
   })
-  
+  ### drivers tab
   output$lap_time_race_driver_times <- renderPlotly({
+    # selected_race <- lap_time_driver_race()
     selected_race <- lap_time_circuit_races_uncut()
-    selected_race <- selected_race[year == input$lap_time_season]
+    # selected_race may update late after driver/race
+    default_year <- lap_time_circuit_races_uncut()[, year][1]
+    if(nrow(selected_race[year == input$lap_time_season]) > 0){
+      selected_race <- selected_race[year == input$lap_time_season]
+    } else {
+      selected_race <- selected_race[year == default_year]
+    }
+    
     min_time <- min(selected_race[, milliseconds]) - 5000
     max_time <- max(selected_race[, milliseconds]) + 1000
     
     total_laps <- factor(1:max(selected_race[, lap]))
-    driver_laps <- selected_race[Driver == input$lap_time_race_driver]
+    # driver may update late after season input change
+    default_driver <- selected_race[, Driver][1]
+    if(nrow(selected_race[Driver == input$lap_time_race_driver]) > 0){
+      driver_laps <- selected_race[Driver == input$lap_time_race_driver]
+    } else {
+      driver_laps <- selected_race[Driver == default_driver]
+    }
+    
     driver_laps[, lap := factor(lap, levels = total_laps)]
     
     gg <- 
@@ -228,4 +243,62 @@ server <- function(input, output, session){
     
     return(ggplotly(gg))
   })
+  ### Info boxes for Driver Stats
+  lap_time_driver_results <- reactive({
+    ### TODO: Very broken when changing circuits
+    race_id <- raceId_by_circuit_season(input$lap_time_circuit, input$lap_time_season)
+    # `input$lap_time_race_driver` may change from circuit/season changes
+    # therefore, need condition to default to the first driver for stats before the input updates
+    race_default_driver <- results[raceId == race_id, driverId][1]
+    driver_id <- drivers[Driver == input$lap_time_race_driver, driverId]
+    
+    if(nrow(results[raceId == race_id & driverId == driver_id]) > 0){
+      return(results[raceId == race_id & driverId == driver_id])
+    } else {
+      return(results[raceId == race_id & driverId == race_default_driver])
+    }
+  })
+  
+  output$lap_time_driver_start_pos <- renderValueBox({
+    valueBox(
+      ordinal(lap_time_driver_results()[, grid]),
+      "Starting Position",
+      color = "teal"
+    )
+  })
+  
+  output$lap_time_driver_finish_pos <- renderValueBox({
+    driver_results <- lap_time_driver_results()
+    driver_stat <- ""
+    
+    if(driver_results[, position == "\\N"]) {
+      driver_stat <- driver_stat <- " / DNF"
+    }
+    
+    valueBox(
+      paste0(
+        ordinal(lap_time_driver_results()[, positionOrder]),
+        driver_stat
+      ),
+      "Finishing Position",
+      color = "green"
+    )
+  })
+  
+  output$lap_time_driver_fastest_lap_time <- renderValueBox({
+    fastest_lap <- driver_fastest_lap(
+      race_id = lap_time_driver_results()[, raceId],
+      driver_id = lap_time_driver_results()[, driverId]
+    )
+    
+    valueBox(
+      fastest_lap[, time],
+      paste0(
+        "Fastest Lap Time: #",
+        fastest_lap[, lap]
+      ),
+      color = "purple"
+    )
+  })
+  
 }

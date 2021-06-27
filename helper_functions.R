@@ -34,6 +34,11 @@ available_circuit_seasons <- function(circuit_name){
             ][, year]
 }
 
+raceId_by_circuit_season <- function(circuit_name, season){
+  circuit_id <- circuits[name == circuit_name, circuitId]
+  return(races[circuitId == circuit_id & year == season, raceId][1])
+}
+
 race_drivers <- function(circuit_name, season, race_id = NA){
   if (is.na(race_id)) {
     race_id <- lap_times_tidy[name == circuit_name
@@ -46,4 +51,14 @@ race_drivers <- function(circuit_name, season, race_id = NA){
     lap_times_tidy[raceId == race_id, Driver] |>
       unique()
   )
+}
+
+driver_fastest_lap <- function(race_id, driver_id){
+  driver_results <- lap_times_tidy[raceId == race_id & driverId == driver_id]
+  
+  if(nrow(driver_results) < 1){
+    return(NA)
+  } else {
+    return(driver_results[order(milliseconds)][1])
+  }
 }

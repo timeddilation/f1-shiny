@@ -66,16 +66,32 @@ body <- dashboardBody(
           tabPanel(
             "Driver Lap Times",
             fluidRow(
-              selectInput(
-                "lap_time_race_driver",
-                "Driver:",
-                choices = race_drivers(default_selected_circuit, available_circuit_seasons(default_selected_circuit)[1]),
-                selected = race_drivers(default_selected_circuit, available_circuit_seasons(default_selected_circuit)[1])[1],
-                multiple = F
+              hr(),
+              column(
+                width = 3,
+                selectInput(
+                  "lap_time_race_driver",
+                  "Driver:",
+                  choices = race_drivers(default_selected_circuit, available_circuit_seasons(default_selected_circuit)[1]),
+                  selected = race_drivers(default_selected_circuit, available_circuit_seasons(default_selected_circuit)[1])[1],
+                  multiple = F
+                )
+              ),
+              valueBoxOutput(
+                "lap_time_driver_start_pos",
+                width = 3
+              ),
+              valueBoxOutput(
+                "lap_time_driver_finish_pos",
+                width = 3
+              ),
+              valueBoxOutput(
+                "lap_time_driver_fastest_lap_time",
+                width = 3
               )
             ),
             fluidRow(
-              plotlyOutput("lap_time_race_driver_times", height = "715px")
+              plotlyOutput("lap_time_race_driver_times", height = "620px")
             )
           )
         )
