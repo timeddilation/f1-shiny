@@ -28,7 +28,7 @@ convert_ms_to_time <- Vectorize(function(ms){
 })
 
 available_circuit_seasons <- function(circuit_name){
-  races[circuitId == circuits[name == circuit_name, circuitId]
+  races[circuit_name == circuit_name
         ][raceId %in% lap_times_tidy[, raceId]
           ][order(year)
             ][, year]

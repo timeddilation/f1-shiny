@@ -11,7 +11,6 @@ library(ggthemes)
 
 source("helper_functions.R")
 
-races <- fread("data/races.csv")
 results <- fread("data/results.csv")
 
 drivers <- (function(){
@@ -26,6 +25,25 @@ circuits <- (function(){
   circuits[circuitId == 18, name := "Autódromo José Carlos Pace"
            ][circuitId == 20, name := "Nürburgring"]
   return(circuits)
+})()
+
+races <- (function(){
+  races <- fread("data/races.csv")
+  
+  race_seqs <- races[order(date)][, .(
+    race_seq = seq_len(.N), raceId, round, name, date
+  ), by = c("year", "circuitId")]
+  
+  race_seqs <- merge(
+    race_seqs,
+    circuits[, .(circuitId, circuit_name = name)],
+    by = "circuitId"
+  )
+  
+  race_seqs <- race_seqs[order(date)]
+  race_seqs[, season_race_index := paste0(year, ".", race_seq)]
+  
+  return(race_seqs)
 })()
 
 lap_times_tidy <- (function(){
