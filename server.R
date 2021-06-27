@@ -1,4 +1,13 @@
 server <- function(input, output, session){
+  update_lap_time_race_driver <- function(circuit_name, season){
+    drivers_in_race <- race_drivers(circuit_name, season)
+    
+    updateSelectInput(
+      inputId = "lap_time_race_driver",
+      choices = drivers_in_race,
+      selected = drivers_in_race[1]
+    )
+  }
   ### Update Input Options based on circuit/season selections
   observeEvent(input$lap_time_circuit, {
     circuit_seasons <- available_circuit_seasons(input$lap_time_circuit)
@@ -9,20 +18,12 @@ server <- function(input, output, session){
       choices = circuit_seasons,
       selected = circuit_seasons[1]
     )
+    
+    update_lap_time_race_driver(input$lap_time_circuit, circuit_seasons[1])
   }, priority = 1)
   
   observeEvent(input$lap_time_season, {
-    drivers_in_race <- unique(
-      lap_times_tidy[name == input$lap_time_circuit
-                     ][year == input$lap_time_season
-                       ][, Driver]
-    )
-    
-    updateSelectInput(
-      inputId = "lap_time_race_driver",
-      choices = drivers_in_race,
-      selected = drivers_in_race[1]
-    )
+    update_lap_time_race_driver(input$lap_time_circuit, input$lap_time_season)
   }, priority = 1)
   ### reactive data based on user inputs
   lap_time_circuit_races_uncut <- reactive({
@@ -137,13 +138,13 @@ server <- function(input, output, session){
   output$lap_time_circtuit_race_driver_times_violen <- renderPlot({
     selected_race <- lap_time_circuit_race()
     selected_race_id <- unique(selected_race[, raceId])
-    # TODO: Throwing a warning when switching circuit input
+
     race_driver_order <- merge(
       results[raceId == selected_race_id, .(driverId, positionOrder)],
       drivers[, .(driverId, Driver)],
       by = "driverId"
     )[order(positionOrder)][, Driver]
-    # END section of problematic code
+
     race_driver_order <- factor(race_driver_order, levels = race_driver_order)
 
     ggplot(
@@ -189,9 +190,7 @@ server <- function(input, output, session){
   })
   ### drivers tab
   output$lap_time_race_driver_times <- renderPlotly({
-    # selected_race <- lap_time_driver_race()
     selected_race <- lap_time_circuit_races_uncut()
-    # selected_race may update late after driver/race
     default_year <- lap_time_circuit_races_uncut()[, year][1]
     if(nrow(selected_race[year == input$lap_time_season]) > 0){
       selected_race <- selected_race[year == input$lap_time_season]
@@ -244,19 +243,22 @@ server <- function(input, output, session){
     return(ggplotly(gg))
   })
   ### Info boxes for Driver Stats
-  lap_time_driver_results <- reactive({
-    ### TODO: Very broken when changing circuits
+  lap_time_season_results <- eventReactive(input$lap_time_season, {
     race_id <- raceId_by_circuit_season(input$lap_time_circuit, input$lap_time_season)
-    # `input$lap_time_race_driver` may change from circuit/season changes
-    # therefore, need condition to default to the first driver for stats before the input updates
-    race_default_driver <- results[raceId == race_id, driverId][1]
+    
+    return(results[raceId == race_id])
+  })
+  
+  lap_time_driver_results <- reactive({
     driver_id <- drivers[Driver == input$lap_time_race_driver, driverId]
     
-    if(nrow(results[raceId == race_id & driverId == driver_id]) > 0){
-      return(results[raceId == race_id & driverId == driver_id])
+    if (driver_id %in% lap_time_season_results()[, driverId]){
+      driver_results <- lap_time_season_results()[driverId == driver_id]
     } else {
-      return(results[raceId == race_id & driverId == race_default_driver])
+      driver_results <- lap_time_season_results()[1]
     }
+    
+    return(driver_results)
   })
   
   output$lap_time_driver_start_pos <- renderValueBox({
@@ -290,13 +292,22 @@ server <- function(input, output, session){
       race_id = lap_time_driver_results()[, raceId],
       driver_id = lap_time_driver_results()[, driverId]
     )
-    
+    # TODO: Investigate why some scenarios throw an error here
+    # test cases: Albert Park 2002; Monza 2000 (but not when seeking backwards? only when going from 1999->2000)
     valueBox(
       fastest_lap[, time],
       paste0(
         "Fastest Lap Time: #",
         fastest_lap[, lap]
       ),
+      color = "purple"
+    )
+  })
+  
+  output$lap_time_drive_debug <- renderValueBox({
+    valueBox(
+      lap_time_driver_results()[, raceId],
+      lap_time_driver_results()[, driverId],
       color = "purple"
     )
   })

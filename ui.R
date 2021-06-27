@@ -78,6 +78,10 @@ body <- dashboardBody(
                 )
               ),
               valueBoxOutput(
+                "lap_time_drive_debug",
+                width = 3
+              ),
+              valueBoxOutput(
                 "lap_time_driver_start_pos",
                 width = 3
               ),
