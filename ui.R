@@ -14,6 +14,9 @@ sidebar <- dashboardSidebar(
 default_selected_circuit <- circuits_with_times[2]
 
 body <- dashboardBody(
+  tags$head(
+    tags$style(HTML('.content-wrapper { overflow: auto; }')) # allows overflow for scolling
+  ),
   tabItems(
     tabItem(
       "lap_times",
