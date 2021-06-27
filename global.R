@@ -51,7 +51,7 @@ lap_times_tidy <- (function(){
   
   race_circuit <- merge(
     circuits[, .(circuitId, circuitRef, name)],
-    races[, .(raceId, circuitId, year)],
+    races[, .(raceId, circuitId, year, season_race_index)],
     by = "circuitId"
   )
   

@@ -28,6 +28,7 @@ convert_ms_to_time <- Vectorize(function(ms){
 })
 
 available_circuit_seasons <- function(circuit_name){
+  # TODO: Remove
   races[circuit_name == circuit_name
         ][raceId %in% lap_times_tidy[, raceId]
           ][order(year)
@@ -42,8 +43,14 @@ available_circuit_races <- function(circuit){
 }
 
 raceId_by_circuit_season <- function(circuit_name, season){
+  # TODO: Remove
   circuit_id <- circuits[name == circuit_name, circuitId]
   return(races[circuitId == circuit_id & year == season, raceId][1])
+}
+
+raceId_by_circuit_race_index <- function(circuit_name, race_index){
+  circuit_id <- circuits[name == circuit_name, circuitId]
+  return(races[circuitId == circuit_id & season_race_index == race_index, raceId][1])
 }
 
 race_drivers <- function(circuit_name, season, race_id = NA){

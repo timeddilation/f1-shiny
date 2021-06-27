@@ -20,7 +20,7 @@ body <- dashboardBody(
   tabItems(
     tabItem(
       "lap_times",
-      h2(textOutput("lap_time_race_name")),
+      h3("Track Lap Time Distributions"),
       column(
         width = 3,
         box(
@@ -58,6 +58,7 @@ body <- dashboardBody(
       ),
       column(
         width = 9,
+        h3(textOutput("lap_time_race_name")),
         tabsetPanel(
           type = "tabs",
           tabPanel(

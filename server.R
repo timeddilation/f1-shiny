@@ -9,11 +9,10 @@ server <- function(input, output, session){
     )
   }
   
-  lap_time_race_name <- function(circuit_name, season){
-    race_id <- raceId_by_circuit_season(circuit_name, season)
+  lap_time_race_name <- function(circuit_name, race){
+    race_id <- raceId_by_circuit_race_index(circuit_name, race)
     
     page_title <- paste(
-      "Track Lap Time Distributions:",
       races[raceId == race_id, year],
       races[raceId == race_id, name]
     )
@@ -30,26 +29,38 @@ server <- function(input, output, session){
       selected = circuit_seasons[1]
     )
     
-    update_lap_time_race_driver(input$lap_time_circuit, circuit_seasons[1])
-    output$lap_time_race_name <- renderText({
-      lap_time_race_name(input$lap_time_circuit, circuit_seasons[1])
-    })
+    # update_lap_time_race_driver(input$lap_time_circuit, circuit_seasons[1])
+    # output$lap_time_race_name <- renderText({
+    #   lap_time_race_name(input$lap_time_circuit, circuit_seasons[1])
+    # })
     
     ### refactor to use races
     circuit_races <- available_circuit_races(input$lap_time_circuit)
+    
     updateSliderTextInput(
       session = session,
       inputId = "lap_time_race",
       choices = circuit_races,
       selected = circuit_races[1]
     )
+    
+    # TODO: update driver names
+    output$lap_time_race_name <- renderText({
+      lap_time_race_name(input$lap_time_circuit, circuit_races[1])
+    })
   }, priority = 1)
   
-  observeEvent(input$lap_time_season, {
+  observeEvent(input$lap_time_race, {
     update_lap_time_race_driver(input$lap_time_circuit, input$lap_time_season)
+    # output$lap_time_race_name <- renderText({
+    #   lap_time_race_name(input$lap_time_circuit, input$lap_time_season)
+    # })
+    
+    # refactor races
     output$lap_time_race_name <- renderText({
-      lap_time_race_name(input$lap_time_circuit, input$lap_time_season)
+      lap_time_race_name(input$lap_time_circuit, input$lap_time_race)
     })
+    
   }, priority = 1)
   ### reactive data based on user inputs
   lap_time_circuit_races_uncut <- reactive({
@@ -63,7 +74,7 @@ server <- function(input, output, session){
     
     circuit_races <- suppressWarnings(split(
       sample_circuit_races,
-      factor(unique(sample_circuit_races[, year]))
+      factor(unique(sample_circuit_races[, season_race_index]))
     ))
     
     eval_circuit <- do.call(
@@ -71,7 +82,7 @@ server <- function(input, output, session){
       lapply(circuit_races, remove_outlier_times)
     )
     
-    eval_circuit[, year := factor(year)]
+    eval_circuit[, season_race_index := factor(season_race_index)]
     
     return(eval_circuit)
   })
@@ -81,10 +92,10 @@ server <- function(input, output, session){
     # to not select a season that does not exist
     all_circuit_races <- lap_time_circuit_races()
     
-    if(nrow(all_circuit_races[year == input$lap_time_season]) >= 1){
-      return(all_circuit_races[year == input$lap_time_season])
+    if(nrow(all_circuit_races[season_race_index == input$lap_time_race]) >= 1){
+      return(all_circuit_races[season_race_index == input$lap_time_race])
     } else {
-      return(all_circuit_races[year == unique(all_circuit_races[, year][1])])
+      return(all_circuit_races[season_race_index == unique(all_circuit_races[, season_race_index][1])])
     }
   })
   
@@ -103,8 +114,8 @@ server <- function(input, output, session){
       lap_time_circuit_races(),
       aes(
         x = milliseconds,
-        y = year,
-        fill = year
+        y = season_race_index,
+        fill = season_race_index
       )
     ) +
       geom_violin() +
