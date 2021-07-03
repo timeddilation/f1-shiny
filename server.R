@@ -20,21 +20,14 @@ server <- function(input, output, session){
   }
   ### Update Input Options based on circuit/season selections
   observeEvent(input$lap_time_circuit, {
-    circuit_seasons <- available_circuit_seasons(input$lap_time_circuit)
-    
-    updateSliderTextInput(
-      session = session,
-      inputId = "lap_time_season",
-      choices = circuit_seasons,
-      selected = circuit_seasons[1]
-    )
-    
-    # update_lap_time_race_driver(input$lap_time_circuit, circuit_seasons[1])
-    # output$lap_time_race_name <- renderText({
-    #   lap_time_race_name(input$lap_time_circuit, circuit_seasons[1])
-    # })
-    
-    ### refactor to use races
+    # TODO: Remove
+    # circuit_seasons <- available_circuit_seasons(input$lap_time_circuit)
+    # updateSliderTextInput(
+    #   session = session,
+    #   inputId = "lap_time_season",
+    #   choices = circuit_seasons,
+    #   selected = circuit_seasons[1]
+    # )
     circuit_races <- available_circuit_races(input$lap_time_circuit)
     
     updateSliderTextInput(
@@ -44,7 +37,8 @@ server <- function(input, output, session){
       selected = circuit_races[1]
     )
     
-    # TODO: update driver names
+    update_lap_time_race_driver(input$lap_time_circuit, input$lap_time_race)
+    
     output$lap_time_race_name <- renderText({
       lap_time_race_name(input$lap_time_circuit, circuit_races[1])
     })
@@ -52,11 +46,7 @@ server <- function(input, output, session){
   
   observeEvent(input$lap_time_race, {
     update_lap_time_race_driver(input$lap_time_circuit, input$lap_time_race)
-    # output$lap_time_race_name <- renderText({
-    #   lap_time_race_name(input$lap_time_circuit, input$lap_time_season)
-    # })
-    
-    # refactor races
+
     output$lap_time_race_name <- renderText({
       lap_time_race_name(input$lap_time_circuit, input$lap_time_race)
     })
@@ -228,11 +218,11 @@ server <- function(input, output, session){
   ### drivers tab
   output$lap_time_race_driver_times <- renderPlotly({
     selected_race <- lap_time_circuit_races_uncut()
-    default_year <- lap_time_circuit_races_uncut()[, year][1]
-    if(nrow(selected_race[year == input$lap_time_season]) > 0){
-      selected_race <- selected_race[year == input$lap_time_season]
+    default_year <- lap_time_circuit_races_uncut()[, season_race_index][1]
+    if(nrow(selected_race[season_race_index == input$lap_time_race]) > 0){
+      selected_race <- selected_race[season_race_index == input$lap_time_race]
     } else {
-      selected_race <- selected_race[year == default_year]
+      selected_race <- selected_race[season_race_index == default_year]
     }
     
     min_time <- min(selected_race[, milliseconds]) - 5000
