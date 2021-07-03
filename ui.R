@@ -1,16 +1,17 @@
 header <- dashboardHeader(title = "F1")
 
 sidebar <- dashboardSidebar(
+  #####
   sidebarMenu(
     id = "tabs",
     menuItem(
       "Lap Times",
       tabName = "lap_times",
-      icon = icon("flag-checkered")
+      icon = icon("stopwatch")
     )
   )
 )
-
+#####
 default_selected_circuit <- circuits_with_times[2]
 
 body <- dashboardBody(
@@ -20,6 +21,7 @@ body <- dashboardBody(
   tabItems(
     tabItem(
       "lap_times",
+      #####
       h3("Track Lap Time Distributions"),
       column(
         width = 3,
@@ -105,6 +107,7 @@ body <- dashboardBody(
         )
       )
     )
+    #####
   )
 )
 
