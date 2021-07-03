@@ -1,6 +1,6 @@
 server <- function(input, output, session){
-  update_lap_time_race_driver <- function(circuit_name, season){
-    drivers_in_race <- race_drivers(circuit_name, season)
+  update_lap_time_race_driver <- function(circuit_name, race){
+    drivers_in_race <- race_drivers(circuit_name, race)
     
     updateSelectInput(
       inputId = "lap_time_race_driver",
@@ -51,7 +51,7 @@ server <- function(input, output, session){
   }, priority = 1)
   
   observeEvent(input$lap_time_race, {
-    update_lap_time_race_driver(input$lap_time_circuit, input$lap_time_season)
+    update_lap_time_race_driver(input$lap_time_circuit, input$lap_time_race)
     # output$lap_time_race_name <- renderText({
     #   lap_time_race_name(input$lap_time_circuit, input$lap_time_season)
     # })

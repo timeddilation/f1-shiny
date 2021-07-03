@@ -53,10 +53,10 @@ raceId_by_circuit_race_index <- function(circuit_name, race_index){
   return(races[circuitId == circuit_id & season_race_index == race_index, raceId][1])
 }
 
-race_drivers <- function(circuit_name, season, race_id = NA){
+race_drivers <- function(circuit_name, race_season, race_id = NA){
   if (is.na(race_id)) {
     race_id <- lap_times_tidy[name == circuit_name
-                              ][year == season
+                              ][season_race_index == race_season
                                 ][, raceId] |>
       min()
   }
