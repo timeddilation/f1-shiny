@@ -27,14 +27,6 @@ convert_ms_to_time <- Vectorize(function(ms){
   return(displayTime)
 })
 
-available_circuit_seasons <- function(circuit_name){
-  # TODO: Remove
-  races[circuit_name == circuit_name
-        ][raceId %in% lap_times_tidy[, raceId]
-          ][order(year)
-            ][, year]
-}
-
 available_circuit_races <- function(circuit){
   races[circuit_name == circuit
         ][raceId %in% lap_times_tidy[, raceId]
@@ -42,10 +34,9 @@ available_circuit_races <- function(circuit){
             ][, season_race_index]
 }
 
-raceId_by_circuit_season <- function(circuit_name, season){
-  # TODO: Remove
+raceId_by_circuit_race <- function(circuit_name, race){
   circuit_id <- circuits[name == circuit_name, circuitId]
-  return(races[circuitId == circuit_id & year == season, raceId][1])
+  return(races[circuitId == circuit_id & season_race_index == race, raceId][1])
 }
 
 raceId_by_circuit_race_index <- function(circuit_name, race_index){

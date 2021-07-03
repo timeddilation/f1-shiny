@@ -24,6 +24,7 @@ circuits <- (function(){
   # fix characters in names
   circuits[circuitId == 18, name := "Autódromo José Carlos Pace"
            ][circuitId == 20, name := "Nürburgring"]
+  circuits[, name := gsub("Ã³", "ó", name)]
   return(circuits)
 })()
 

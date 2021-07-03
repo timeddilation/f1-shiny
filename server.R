@@ -20,14 +20,6 @@ server <- function(input, output, session){
   }
   ### Update Input Options based on circuit/season selections
   observeEvent(input$lap_time_circuit, {
-    # TODO: Remove
-    # circuit_seasons <- available_circuit_seasons(input$lap_time_circuit)
-    # updateSliderTextInput(
-    #   session = session,
-    #   inputId = "lap_time_season",
-    #   choices = circuit_seasons,
-    #   selected = circuit_seasons[1]
-    # )
     circuit_races <- available_circuit_races(input$lap_time_circuit)
     
     updateSliderTextInput(
@@ -270,13 +262,21 @@ server <- function(input, output, session){
     return(ggplotly(gg))
   })
   ### Info boxes for Driver Stats
-  lap_time_season_results <- eventReactive(input$lap_time_season, {
-    race_id <- raceId_by_circuit_season(input$lap_time_circuit, input$lap_time_season)
+  lap_time_season_results <- eventReactive(input$lap_time_race, {
+    race_id <- raceId_by_circuit_race(input$lap_time_circuit, input$lap_time_race)
     
     return(results[raceId == race_id])
   })
   
-  lap_time_driver_results <- reactive({
+  lap_time_driver_race_change <- reactive({
+    paste(
+      input$lap_time_circuit,
+      input$lap_time_race,
+      input$lap_time_race_driver
+    )
+  })
+  
+  lap_time_driver_results <- eventReactive(lap_time_driver_race_change(), {
     driver_id <- drivers[Driver == input$lap_time_race_driver, driverId]
     
     if (driver_id %in% lap_time_season_results()[, driverId]){

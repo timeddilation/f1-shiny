@@ -34,14 +34,6 @@ body <- dashboardBody(
             selected = default_selected_circuit,
             multiple = F
           ),
-          # TODO: change to race, not season. Some tracks have >1 race per season
-          sliderTextInput(
-            "lap_time_season",
-            "Season:",
-            choices = available_circuit_seasons(default_selected_circuit),
-            selected = available_circuit_seasons(default_selected_circuit)[1],
-            animate = T
-          ),
           sliderTextInput(
             "lap_time_race",
             "Race:",
@@ -84,8 +76,8 @@ body <- dashboardBody(
                 selectInput(
                   "lap_time_race_driver",
                   "Driver:",
-                  choices = race_drivers(default_selected_circuit, available_circuit_seasons(default_selected_circuit)[1]),
-                  selected = race_drivers(default_selected_circuit, available_circuit_seasons(default_selected_circuit)[1])[1],
+                  choices = race_drivers(default_selected_circuit, available_circuit_races(default_selected_circuit)[1]),
+                  selected = race_drivers(default_selected_circuit, available_circuit_races(default_selected_circuit)[1])[1],
                   multiple = F
                 )
               ),
