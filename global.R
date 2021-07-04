@@ -15,6 +15,7 @@ library(rnaturalearthdata)
 source("helper_functions.R")
 
 results <- fread("data/results.csv")
+quali <- fread("data/qualifying.csv")
 
 drivers <- (function(){
   drivers <- fread("data/drivers.csv")

@@ -29,7 +29,7 @@ server <- function(input, output, session){
         circuits_by_year(input$race_sum_year)[1, name]
       )[1, name]
     )
-  })
+  }, priority = 1)
   
   observeEvent(input$race_sum_circuit, {
     updateSelectInput(
@@ -110,4 +110,35 @@ server <- function(input, output, session){
     return(pp)
   })
   
+  output$race_sum_lap_pos <- renderPlotly({
+    eval_raceId <- races[year == input$race_sum_year
+                         ][name == input$race_sum_gp
+                           ][, raceId]
+    
+    race_poss <- merge(
+      results[raceId == eval_raceId & grid != 0, .(driverId, lap = 0, position = grid)],
+      drivers[, .(driverId, Driver)],
+      by = "driverId"
+    ) |>
+      rbind(
+        lap_times_tidy[raceId == eval_raceId, .(driverId, lap, position, Driver)]
+      )
+    
+    gg <- ggplot(race_poss, aes(x = lap, y = position, color = Driver)) +
+      geom_point() +
+      geom_line() +
+      scale_y_continuous(
+        trans = "reverse",
+        breaks = race_poss[order(position)][, position] |> unique(),
+      ) +
+      xlab("Lap") +
+      ylab("Position") +
+      theme_clean() +
+      theme(
+        plot.background = element_rect(colour = "white"),
+        legend.background = element_blank()
+      )
+    # TODO: Throws error when changing year and the prior selected circuit is not in that year
+    return(ggplotly(gg))
+  })
 }

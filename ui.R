@@ -76,6 +76,13 @@ body <- dashboardBody(
             height = "200px"
           )
         )
+      ),
+      column(
+        width = 8,
+        h3("Overtakes"),
+        plotlyOutput(
+          "race_sum_lap_pos"
+        )
       )
     ),
     tabItem(
