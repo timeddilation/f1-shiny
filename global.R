@@ -47,6 +47,7 @@ races <- (function(){
   
   race_seqs <- race_seqs[order(date)]
   race_seqs[, season_race_index := paste0(year, ".", race_seq)]
+  race_seqs[, fq_name := paste0("Round ", round, ": ", name, " ", year)]
   
   return(race_seqs)
 })()

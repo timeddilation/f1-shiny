@@ -43,37 +43,20 @@ body <- dashboardBody(
             sep = "",
             animate = T
           ),
-          fluidRow(
-            column(
-              width = 6,
-              selectInput(
-                "race_sum_circuit",
-                "Circuit:",
-                choices = circuits_by_year(lap_times_tidy[, year] |> min())[, name],
-                selected = circuits_by_year(lap_times_tidy[, year] |> min())[1, name],
-                multiple = F
-              )
-            ),
-            column(
-              width = 6,
-              selectInput(
-                "race_sum_gp",
-                "Grand Prix:",
-                choices = gps_by_year_circuit(
-                  lap_times_tidy[, year] |> min(),
-                  circuits_by_year(lap_times_tidy[, year] |> min())[1, name]
-                )[, name],
-                selected = gps_by_year_circuit(
-                  lap_times_tidy[, year] |> min(),
-                  circuits_by_year(lap_times_tidy[, year] |> min())[1, name]
-                )[1, name],
-                multiple = F
-              )
-            )
+          selectInput(
+            "race_sum_gp",
+            "Grand Prix:",
+            choices = gps_by_year(
+              lap_times_tidy[, year] |> min()
+            )[, fq_name],
+            selected = gps_by_year(
+              lap_times_tidy[, year] |> min()
+            )[1, fq_name],
+            multiple = F
           ),
           plotlyOutput(
             "race_sum_map",
-            height = "200px"
+            height = "300px"
           )
         )
       ),

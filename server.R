@@ -9,56 +9,35 @@ server <- function(input, output, session){
   )
   
   observeEvent(input$race_sum_year, {
-    # update the circuits with races in selected year
-    updateSelectInput(
-      session = session,
-      "race_sum_circuit",
-      choices = circuits_by_year(input$race_sum_year)[, name],
-      selected = circuits_by_year(input$race_sum_year)[1, name]
-    )
-    # initialize the Grand Prix option as well
+    # initialize the Grand Prix
     updateSelectInput(
       session = session,
       "race_sum_gp",
-      choices = gps_by_year_circuit(
-        input$race_sum_year,
-        circuits_by_year(input$race_sum_year)[1, name]
-      )[, name],
-      selected = gps_by_year_circuit(
-        input$race_sum_year,
-        circuits_by_year(input$race_sum_year)[1, name]
-      )[1, name]
+      choices = gps_by_year(
+        input$race_sum_year
+      )[, fq_name],
+      selected = gps_by_year(
+        input$race_sum_year
+      )[1, fq_name]
     )
   }, priority = 1)
   
-  observeEvent(input$race_sum_circuit, {
-    updateSelectInput(
-      session = session,
-      "race_sum_gp",
-      choices = gps_by_year_circuit(
-        input$race_sum_year,
-        input$race_sum_circuit
-      )[, name],
-      selected = gps_by_year_circuit(
-        input$race_sum_year,
-        input$race_sum_circuit
-      )[1, name]
-    )
-  })
-  
   output$race_sum_map <- renderPlotly({
-    geo_circuit <- circuits[name == input$race_sum_circuit, .(
-      Name = name,
-      lat,
-      lng,
-      Location = paste(location, country, sep = ", ")
-    )]
+    geo_circuit <- races[fq_name == input$race_sum_gp, circuitId] |>
+      {\(x) {circuits[circuitId == x, .(
+        Circuit = name,
+        lat,
+        lng,
+        Location = paste(location, country, sep = ", ")
+      )]}}()
     
-    year_circuits <- lap_times_tidy[year == input$race_sum_year, circuitId] |>
+    year_circuits <- races[fq_name == input$race_sum_gp, year] |>
+      {\(x) {lap_times_tidy[year == x, circuitId]}}() |>
       unique() |>
-      {\(x) {circuits[circuitId %in% x][name != input$race_sum_circuit]}}()
+      {\(x) {circuits[circuitId %in% x][circuitId != races[fq_name == input$race_sum_gp, circuitId]]}}()
+    
     year_circuits <- year_circuits[, .(
-      Name = name,
+      Circuit = name,
       lat,
       lng,
       Location = paste(location, country, sep = ", ")
@@ -71,7 +50,7 @@ server <- function(input, output, session){
         aes(
           x = lng,
           y = lat,
-          name = Name,
+          name = Circuit,
           loc = Location
         ),
         shape = 18,
@@ -83,7 +62,7 @@ server <- function(input, output, session){
         aes(
           x = lng,
           y = lat,
-          name = Name,
+          name = Circuit,
           loc = Location
         ),
         shape = 18,
@@ -111,10 +90,8 @@ server <- function(input, output, session){
   })
   
   output$race_sum_lap_pos <- renderPlotly({
-    eval_raceId <- races[year == input$race_sum_year
-                         ][name == input$race_sum_gp
-                           ][, raceId]
-    
+    eval_raceId <- races[fq_name == input$race_sum_gp, raceId]
+    # TODO: Need a better way to handle pitlane starts other than just excluding them
     race_poss <- merge(
       results[raceId == eval_raceId & grid != 0, .(driverId, lap = 0, position = grid)],
       drivers[, .(driverId, Driver)],
@@ -123,7 +100,7 @@ server <- function(input, output, session){
       rbind(
         lap_times_tidy[raceId == eval_raceId, .(driverId, lap, position, Driver)]
       )
-    
+
     gg <- ggplot(race_poss, aes(x = lap, y = position, color = Driver)) +
       geom_point() +
       geom_line() +

@@ -41,6 +41,11 @@ circuits_by_year <- function(yr){
   return(year_circuits)
 }
 
+gps_by_year <- function(yr){
+  lap_times_tidy[year == yr, raceId] |>
+    {\(x) {races[raceId %in% x]}}()
+}
+
 gps_by_year_circuit <- function(yr, circuit){
   year_circuit_gps <- lap_times_tidy[year == yr, raceId] |>
     unique() |>
