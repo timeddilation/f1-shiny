@@ -5,6 +5,11 @@ sidebar <- dashboardSidebar(
   sidebarMenu(
     id = "tabs",
     menuItem(
+      "Race Summary",
+      tabName = "race_sum",
+      icon = icon("flag-checkered")
+    ),
+    menuItem(
       "Lap Times",
       tabName = "lap_times",
       icon = icon("stopwatch")
@@ -19,6 +24,60 @@ body <- dashboardBody(
     tags$style(HTML('.content-wrapper { overflow: auto; }')) # allows overflow for scolling
   ),
   tabItems(
+    tabItem(
+      "race_sum",
+      h3("Race Summary"),
+      column(
+        width = 4,
+        box(
+          width = 12,
+          title = "Race Selection",
+          status = "primary",
+          sliderInput(
+            "race_sum_year",
+            "Year:",
+            min = lap_times_tidy[, year] |> min(),
+            max = lap_times_tidy[, year] |> max(),
+            value = lap_times_tidy[, year] |> min(),
+            step = 1,
+            sep = "",
+            animate = T
+          ),
+          fluidRow(
+            column(
+              width = 6,
+              selectInput(
+                "race_sum_circuit",
+                "Circuit:",
+                choices = circuits_by_year(lap_times_tidy[, year] |> min())[, name],
+                selected = circuits_by_year(lap_times_tidy[, year] |> min())[1, name],
+                multiple = F
+              )
+            ),
+            column(
+              width = 6,
+              selectInput(
+                "race_sum_gp",
+                "Grand Prix:",
+                choices = gps_by_year_circuit(
+                  lap_times_tidy[, year] |> min(),
+                  circuits_by_year(lap_times_tidy[, year] |> min())[1, name]
+                )[, name],
+                selected = gps_by_year_circuit(
+                  lap_times_tidy[, year] |> min(),
+                  circuits_by_year(lap_times_tidy[, year] |> min())[1, name]
+                )[1, name],
+                multiple = F
+              )
+            )
+          ),
+          plotlyOutput(
+            "race_sum_map",
+            height = "200px"
+          )
+        )
+      )
+    ),
     tabItem(
       "lap_times",
       #####

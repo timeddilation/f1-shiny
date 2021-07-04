@@ -34,6 +34,20 @@ available_circuit_races <- function(circuit){
             ][, season_race_index]
 }
 
+circuits_by_year <- function(yr){
+  year_circuits <- lap_times_tidy[year == yr, circuitId] |>
+    unique() |>
+    {\(x) {circuits[circuitId %in% x]}}()
+  return(year_circuits)
+}
+
+gps_by_year_circuit <- function(yr, circuit){
+  year_circuit_gps <- lap_times_tidy[year == yr, raceId] |>
+    unique() |>
+    {\(x) {races[raceId %in% x]}}()
+  return(year_circuit_gps[circuit_name == circuit])
+}
+
 raceId_by_circuit_race <- function(circuit_name, race){
   circuit_id <- circuits[name == circuit_name, circuitId]
   return(races[circuitId == circuit_id & season_race_index == race, raceId][1])
