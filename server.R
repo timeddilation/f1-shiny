@@ -33,10 +33,11 @@ server <- function(input, output, session){
                ][1, Time := convert_ms_to_time(as.numeric(milliseconds))]
     rm(race_finish_time)
     
-    race_sum[, `Position Change` := (`Starting Position` - `Finishing Position`)
-             ][, `Position Change` := as.character(`Position Change`)
-               ][nchar(`Position Change`) == 1 & `Position Change` != "0", 
-                 `Position Change` := paste0("+", `Position Change`)]
+    race_sum[, `Position Change` := ""]
+    race_sum[, pos_change := (`Starting Position` - `Finishing Position`)
+             ][pos_change < 0, `Position Change` := paste("v", (pos_change * -1))
+               ][pos_change > 0, `Position Change` := paste("^", pos_change)
+                 ][pos_change == 0, `Position Change` := "0"]
     return(race_sum)
   })
   
@@ -44,12 +45,26 @@ server <- function(input, output, session){
     race_sum <- race_sum_results()
     race_sum[, .(
       ` ` = ordinal(`Finishing Position`),
-      ` ` = `Position Change`,
+      `From Grid` = `Position Change`,
       Driver,
       Time,
-      Points = paste0("+", points)
+      Points = paste0("+", points),
+      Total = `Season Points`
     )]
-  }, width = "100%", align = "r", hover = T)
+  }, width = "100%", align = "r", striped = T, hover = T, bordered = T)
+  
+  output$race_sum_results_constructors <- renderTable({
+    race_sum_results()[, .(
+      points = sum(points),
+      `Season Points` = sum(`Season Points`)
+    ), by = "Constructor"
+    ][order(-`Season Points`)
+      ][, .(
+        Constructor,
+        Points = paste("+", points),
+        Total = `Season Points`
+      )]
+  }, width = "100%", align = "r", striped = T, hover = T, bordered = T)
   
   output$race_sum_map <- renderPlotly({
     geo_circuit <- races[fq_name == input$race_sum_gp, circuitId] |>

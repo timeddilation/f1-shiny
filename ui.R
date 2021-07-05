@@ -67,13 +67,13 @@ body <- dashboardBody(
           tabPanel(
             "Results",
             column(
-              width = 6,
+              width = 7,
               tableOutput(
                 "race_sum_results_table"
               )
             ),
             column(
-              width = 6,
+              width = 5,
               hr(),
               infoBox(
                 title = "Fastest Lap",
@@ -82,6 +82,9 @@ body <- dashboardBody(
                 icon = icon("stopwatch"),
                 color = "purple",
                 width = 12
+              ),
+              tableOutput(
+                "race_sum_results_constructors"
               )
             )
           ),
