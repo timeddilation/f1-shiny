@@ -16,12 +16,18 @@ convert_ms_to_time <- Vectorize(function(ms){
   if(!is.na(ms)){
     seconds <- ms/1000
     totalMinutes <- floor(seconds / 60)
+    totalHours <- floor(totalMinutes / 60)
+    remainingMinutes <- totalMinutes - (totalHours * 60)
     remainingSeconds <- seconds - (totalMinutes * 60)
     
     if (remainingSeconds < 10){
-      displayTime <- paste(totalMinutes, ":0", sprintf("%.3f", round(remainingSeconds,3)), sep = "")
+      displayTime <- paste(remainingMinutes, ":0", sprintf("%.3f", round(remainingSeconds,3)), sep = "")
     } else {
-      displayTime <- paste(totalMinutes, ":", sprintf("%.3f", round(remainingSeconds,3)), sep = "")  
+      displayTime <- paste(remainingMinutes, ":", sprintf("%.3f", round(remainingSeconds,3)), sep = "")  
+    }
+    
+    if (totalHours > 0){
+      displayTime <- paste0(totalHours, ":", displayTime)
     }
   }
   return(displayTime)
