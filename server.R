@@ -22,6 +22,35 @@ server <- function(input, output, session){
     )
   }, priority = 1)
   
+  race_sum_results <- reactive({
+    race_sum <- results_tidy[fq_name == input$race_sum_gp
+                             ][order(`Finishing Position`)]
+    race_finish_time <- race_sum[milliseconds != "\\N", milliseconds] |> 
+      as.integer() |> 
+      min()
+    race_sum[, Time := Status
+             ][milliseconds != "\\N", Time := paste0("+", convert_ms_to_time((race_finish_time - as.numeric(milliseconds)) * -1))
+               ][1, Time := convert_ms_to_time(as.numeric(milliseconds))]
+    rm(race_finish_time)
+    
+    race_sum[, `Position Change` := (`Starting Position` - `Finishing Position`)
+             ][, `Position Change` := as.character(`Position Change`)
+               ][nchar(`Position Change`) == 1 & `Position Change` != "0", 
+                 `Position Change` := paste0("+", `Position Change`)]
+    return(race_sum)
+  })
+  
+  output$race_sum_results_table <- renderTable({
+    race_sum <- race_sum_results()
+    race_sum[, .(
+      ` ` = ordinal(`Finishing Position`),
+      ` ` = `Position Change`,
+      Driver,
+      Time,
+      Points = paste0("+", points)
+    )]
+  }, width = "100%", align = "r", hover = T)
+  
   output$race_sum_map <- renderPlotly({
     geo_circuit <- races[fq_name == input$race_sum_gp, circuitId] |>
       {\(x) {circuits[circuitId == x, .(
@@ -113,9 +142,12 @@ server <- function(input, output, session){
       theme_clean() +
       theme(
         plot.background = element_rect(colour = "white"),
-        legend.background = element_blank()
+        legend.background = element_blank(),
+        legend.position = "bottom"
       )
     # TODO: Throws error when changing year and the prior selected circuit is not in that year
-    return(ggplotly(gg))
+    pp <- ggplotly(gg) |>
+      layout(legend = list(orientation = 'h', x = 0, y = 1.2))
+    return(pp)
   })
 }

@@ -16,6 +16,7 @@ source("helper_functions.R")
 
 results <- fread("data/results.csv")
 quali <- fread("data/qualifying.csv")
+constructors <- fread("data/constructors.csv")
 
 drivers <- (function(){
   drivers <- fread("data/drivers.csv")
@@ -74,6 +75,39 @@ lap_times_tidy <- (function(){
   )
   
   return(tidy_times)
+})()
+
+results_tidy <- (function(){
+  result_status <- fread("data/status.csv")
+  
+  tidy_results <- merge(
+    races[, .(raceId, name, fq_name, date, year, Round = round)],
+    results[, .(raceId, driverId, points, constructorId, statusId, milliseconds,
+                `Finishing Position` = positionOrder, `Starting Position` = grid)],
+    by = "raceId"
+  ) |>
+    merge(
+      drivers[, .(driverId, Driver)],
+      by = "driverId"
+    ) |>
+    merge(
+      constructors[, .(constructorId, Constructor = name)],
+      by = "constructorId"
+    ) |>
+    merge(
+      result_status[, .(statusId, Status = status)],
+      by = "statusId"
+    )
+  tidy_results <- tidy_results[order(date)]
+  tidy_results[, `Season Points` := cumsum(points), by = c("year", "driverId")]
+  # handle pit lane starts starting position being 0
+  tidy_results <- rbind(
+    tidy_results[order(raceId, `Starting Position`)][`Starting Position` != 0],
+    tidy_results[`Starting Position` == 0]
+  )
+  
+  tidy_results[, `Starting Position` := seq_len(.N), by = "raceId"]
+  return(tidy_results)
 })()
 
 circuits_with_times <- unique(lap_times_tidy[order(name)][, name])

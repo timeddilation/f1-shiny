@@ -62,9 +62,36 @@ body <- dashboardBody(
       ),
       column(
         width = 8,
-        h3("Overtakes"),
-        plotlyOutput(
-          "race_sum_lap_pos"
+        tabsetPanel(
+          type = "tabs",
+          tabPanel(
+            "Results",
+            column(
+              width = 6,
+              tableOutput(
+                "race_sum_results_table"
+              )
+            ),
+            column(
+              width = 6,
+              hr(),
+              infoBox(
+                title = "Fastest Lap",
+                value = "4:20.690",
+                subtitle = "Bob Ross",
+                icon = icon("stopwatch"),
+                color = "purple",
+                width = 12
+              )
+            )
+          ),
+          tabPanel(
+            "Overtakes",
+            plotlyOutput(
+              "race_sum_lap_pos",
+              height = "600px"
+            )
+          )
         )
       )
     ),
